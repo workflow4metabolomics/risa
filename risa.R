@@ -1,5 +1,4 @@
 library(Risa)
-library(xcms)
 
 ##############################################################################
 ## First Galaxy tool:
@@ -60,23 +59,3 @@ sampleMetadata <- cbind(sampleMetadata, sclass,
 
 write.table(sampleMetadata, file="sampleMetadata.tsv",
             quote=FALSE, row.names=FALSE, sep="\t")
-
-##############################################################################
-## Second Galaxy tool: 
-## perform individual peak picking in the xcms tool,
-## and the lapply() loop would be taken care of by Galaxy
-## TODO: double check generated filenames are unique to avoid overwriting ?
-
-dummy <- lapply(msfiles, FUN=function(f) {
-    xs <- xcmsSet(f, method="centWave", prefilter=c(10,5000))
-    saveRDS(xs, paste(basename(f), "rds", sep="."))
-})
-
-##############################################################################
-## Third Galaxy tool: 
-## Then we need a merge tool, that reads all the individually picked files
-## and merges them into the same xcmsSet the previously existing xcmsSet tool did:
-
-xss <- lapply (msfiles, FUN=function(f) readRDS(paste(basename(f), "rds", sep=".")))
-xs2 <- do.call(xcms:::c.xcmsSet, xss)
-phenoData(xs2) <- read.delim("sampleMetadata.tsv", sep="\t")
